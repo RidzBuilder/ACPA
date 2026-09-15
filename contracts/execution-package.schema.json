@@ -1,0 +1,12 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "title":"ACPA ExecutionPackage",
+  "type":"object",
+  "required":["engine","capabilities","payload"],
+  "properties":{
+    "engine":{"type":"string"},
+    "capabilities":{"type":"array","items":{"type":"string"}},
+    "payload":{"type":"object"},
+    "validation":{"type":"object"}
+  }
+}

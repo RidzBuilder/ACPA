@@ -1,0 +1,12 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "title":"ACPA EvidenceRecord",
+  "type":"object",
+  "required":["experiment_id","result","decision"],
+  "properties":{
+    "experiment_id":{"type":"string"},
+    "result":{"type":"string"},
+    "decision":{"type":"string"},
+    "promotion_status":{"type":"string"}
+  }
+}

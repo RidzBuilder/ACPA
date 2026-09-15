@@ -1,0 +1,18 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "title":"ACPA ProductionPlan",
+  "type":"object",
+  "required":["content_family","pattern_id","scenes"],
+  "properties":{
+    "content_family":{"type":"string"},
+    "pattern_id":{"type":"string"},
+    "grammar":{"type":"string"},
+    "scenes":{"type":"array","items":{"type":"object","required":["scene_id","purpose"],"properties":{
+      "scene_id":{"type":"string"},
+      "purpose":{"type":"string"},
+      "asset_ids":{"type":"array","items":{"type":"string"}},
+      "visual_direction":{"type":"string"},
+      "duration_seconds":{"type":"number"}
+    }}}
+  }
+}

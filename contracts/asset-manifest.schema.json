@@ -1,0 +1,15 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "title":"ACPA AssetManifest",
+  "type":"object",
+  "required":["assets"],
+  "properties":{
+    "assets":{"type":"array","items":{"type":"object","required":["asset_id","asset_type","status"],"properties":{
+      "asset_id":{"type":"string"},
+      "asset_type":{"type":"string"},
+      "source":{"type":"string"},
+      "status":{"type":"string","enum":["ready","needs_review","missing","restricted"]},
+      "notes":{"type":"string"}
+    }}}
+  }
+}
