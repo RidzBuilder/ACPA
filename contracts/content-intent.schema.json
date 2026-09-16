@@ -1,0 +1,19 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "title":"ACPA ContentIntent",
+  "type":"object",
+  "required":["intent_id","status","objective"],
+  "properties":{
+    "intent_id":{"type":"string"},
+    "status":{"type":"string","enum":["draft","needs_review","approved"]},
+    "objective":{"type":"string"},
+    "platform":{"type":"string"},
+    "duration_seconds":{"type":"number"},
+    "content_family_hint":{"type":"string"},
+    "cta":{"type":"string"},
+    "client_constraints":{"type":"array","items":{"type":"string"}},
+    "source_type":{"type":"string","enum":["approved_brief","experimental_intent","evidence_derived"]},
+    "notes":{"type":"string"}
+  },
+  "additionalProperties":false
+}

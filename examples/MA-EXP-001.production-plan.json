@@ -1,0 +1,16 @@
+{
+  "intent_id":"MA-EXP-001",
+  "status":"approved",
+  "content_family":"Macro Demo",
+  "pattern_id":"macro-demo-v0.1",
+  "grammar":"ATTENTION → PRODUCT → HUMAN/CONTEXT → PROOF/DEMONSTRATION → BENEFIT/CLAIM → ACTION → BRAND",
+  "scenes":[
+    {"scene_id":"S01","purpose":"Product Hook","asset_ids":["product_primary"],"duration_seconds":2},
+    {"scene_id":"S02","purpose":"Dispense","asset_ids":["product_primary","hand_reference"],"duration_seconds":2},
+    {"scene_id":"S03","purpose":"Application","asset_ids":["product_primary","hand_reference","skin_reference"],"duration_seconds":3},
+    {"scene_id":"S04","purpose":"Macro Proof","asset_ids":["skin_reference","product_primary"],"duration_seconds":3},
+    {"scene_id":"S05","purpose":"Benefit","asset_ids":["product_primary","skin_reference"],"duration_seconds":2},
+    {"scene_id":"S06","purpose":"Brand Closure","asset_ids":["product_primary"],"duration_seconds":2}
+  ],
+  "notes":"Experimental template; placeholder assets only until supplied."
+}

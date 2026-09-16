@@ -1,0 +1,16 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "title":"ACPA EvaluationRecord",
+  "type":"object",
+  "required":["evaluation_id","experiment_id","observations","decision"],
+  "properties":{
+    "evaluation_id":{"type":"string"},
+    "experiment_id":{"type":"string"},
+    "observations":{"type":"array","items":{"type":"string"}},
+    "failures":{"type":"array","items":{"type":"string"}},
+    "hypotheses":{"type":"array","items":{"type":"string"}},
+    "decision":{"type":"string","enum":["iterate","accept_as_experiment","promote","reject","blocked"]},
+    "promotion_status":{"type":"string","enum":["unreviewed","provisional","promoted","rejected"]}
+  },
+  "additionalProperties":false
+}

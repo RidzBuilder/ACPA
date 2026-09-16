@@ -1,0 +1,16 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "title":"ACPA CapabilityResolution",
+  "type":"object",
+  "required":["resolution_id","requirements"],
+  "properties":{
+    "resolution_id":{"type":"string"},
+    "requirements":{"type":"array","items":{"type":"object","required":["capability_id","status"],"properties":{
+      "capability_id":{"type":"string"},
+      "status":{"type":"string","enum":["supported","unsupported","conditional","needs_review"]},
+      "reason":{"type":"string"},
+      "adapter_id":{"type":"string"}
+    }}}
+  },
+  "additionalProperties":false
+}
