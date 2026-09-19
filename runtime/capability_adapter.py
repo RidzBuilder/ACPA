@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Any, Protocol
+import json
 
 SUPPORTED_CAPABILITIES = {
     "scene.composition",
@@ -163,3 +164,51 @@ def execute_with_adapter(
     """Execute through the selected adapter and reject mismatches explicitly."""
     adapter = adapter or LocalSmokeAdapter()
     return adapter.execute(execution_package)
+
+
+def conformance_smoke() -> dict[str, Any]:
+    """Produce a deterministic capability→adapter conformance trace."""
+    plan = {
+        "content_family": "Macro Demo",
+        "pattern_id": "macro-demo-v0.1",
+        "scenes": [{"scene_id": "S01", "purpose": "Product Hook"}],
+    }
+    resolution = resolve_capability_adapter(
+        ["scene.composition", "product.application", "output.validation"]
+    )
+    package = compile_for_adapter(plan, resolution)
+    execution = execute_with_adapter(package)
+    unsupported = resolve_capability_adapter(["unknown.capability"])
+    review = resolve_capability_adapter(
+        ["scene.composition"], engine_context="external-provider"
+    )
+    return {
+        "status": "passed" if (
+            resolution.status == "resolved"
+            and package["status"] == "compiled"
+            and execution["status"] == "passed"
+            and unsupported.status == "unsupported"
+            and review.status == "needs_review"
+        ) else "failed",
+        "resolution": {
+            "status": resolution.status,
+            "adapter_id": resolution.adapter_id,
+        },
+        "package": {
+            "status": package["status"],
+            "adapter": package.get("adapter"),
+        },
+        "execution": execution,
+        "unsupported_case": {
+            "status": unsupported.status,
+            "unresolved": list(unsupported.unresolved),
+        },
+        "review_case": {
+            "status": review.status,
+            "needs_review": list(review.needs_review),
+        },
+    }
+
+
+if __name__ == "__main__":
+    print(json.dumps(conformance_smoke(), indent=2))
