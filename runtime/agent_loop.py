@@ -6,6 +6,7 @@ execution so the behavioral trace is reproducible.
 """
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass, field
 from typing import Any, Callable
 
@@ -173,3 +174,7 @@ def run_failure_then_correction() -> dict[str, Any]:
         }
 
     return run_agent_loop(executor, max_attempts=2, require_human_gate=False)
+
+
+if __name__ == "__main__":
+    print(json.dumps(run_agent_loop(require_human_gate=False), indent=2))
