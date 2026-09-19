@@ -15,11 +15,13 @@
 
 ## Blocking gaps
 
-### GAP-ACPA-001 — Executable application/runtime surface missing or unverified
-Root cause: repository baseline is specification/contract-heavy and no conventional executable entry point or package manifest was verified.
-Action: implement or recover the minimum runtime surface directly from canonical contracts; do not redesign architecture.
-Acceptance: reproducible build/start/test commands plus a health/readiness check.
-Evidence: command output and committed implementation.
+### GAP-ACPA-001 — Executable application/runtime surface
+**Status: PASS (bounded remediation)**
+Root cause: repository baseline was specification/contract-heavy and no conventional executable entry point or package manifest was verified.
+Action completed: added stdlib-only runtime surface, health/readiness endpoint, deterministic MA-EXP-001 smoke path, executable unit tests, and CI workflow on the execution branch.
+Acceptance: runtime source is executable with reproducible commands; 5 unit tests pass; `health` returns ready; `smoke` returns passed for MA-EXP-001.
+Evidence: commits through `ecb0391f9d7a845268e267b2c8760a5b0848c18c`; isolated execution of the retrieved committed runtime returned health exit 0 and smoke exit 0/passed; unit suite returned 5/5 OK.
+Limitation: GitHub Actions run status could not be independently retrieved because the available connector exposes workflow runs for PR-triggered runs, and direct git clone from this environment has no outbound DNS/network. Therefore repository-hosted CI execution remains unverified.
 
 ### GAP-ACPA-002 — Agentic runtime loop not proven
 Root cause: orchestration specification exists, but no runtime trace proves intent → planning → capability/tool selection → execution → observation → evaluation → correction.
