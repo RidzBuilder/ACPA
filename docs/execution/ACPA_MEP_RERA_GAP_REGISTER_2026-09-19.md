@@ -4,14 +4,14 @@
 
 | Audit stream | Status | Evidence basis |
 |---|---|---|
-| Architecture traceability | PARTIAL | Architecture/specification/contracts are present; implementation/runtime linkage not proven |
-| Contract conformance | PARTIAL | Schemas and contract documents present; executable validation not proven |
-| Agent runtime | GAP | No runtime loop execution evidence |
-| Capability audit | PARTIAL | Capability registry and resolution schemas present; resolver implementation not proven |
-| Adapter audit | PARTIAL | Adapter contract/schema semantics present; executable adapter implementation not proven |
-| Runtime readiness | GAP | No verified build/start/test/runtime configuration |
-| Test readiness | GAP | Acceptance checklist exists, but behavioral test execution is not evidenced |
-| Emergent compatibility | BLOCKED | Requires executable/importable project and Emergent execution evidence |
+| Architecture traceability | PASS/PARTIAL | Locked architecture/specification/contracts linked to bounded runtime surfaces |
+| Contract conformance | PARTIAL | Schemas/contracts present; full end-to-end conformance still pending |
+| Agent runtime | PASS (bounded remediation) | Deterministic runtime loop with trace, observation, correction and human gate |
+| Capability audit | PARTIAL | Executable resolution exists for bounded local capability set; broader adapter proof pending |
+| Adapter audit | PARTIAL | Local adapter boundary executes; complete adapter ecosystem not proven |
+| Runtime readiness | PASS (bounded) | Health/readiness + executable smoke + agent loop available on execution branch |
+| Test readiness | PASS (bounded) | GAP-001 tests plus GAP-002 behavioral tests executed locally |
+| Emergent compatibility | BLOCKED | Requires controlled Emergent import/build/run evidence |
 
 ## Blocking gaps
 
@@ -24,38 +24,45 @@ Evidence: commits through `ecb0391f9d7a845268e267b2c8760a5b0848c18c`; isolated e
 Limitation: GitHub Actions run status could not be independently retrieved because the available connector exposes workflow runs for PR-triggered runs, and direct git clone from this environment has no outbound DNS/network. Therefore repository-hosted CI execution remains unverified.
 
 ### GAP-ACPA-002 — Agentic runtime loop not proven
-Root cause: orchestration specification exists, but no runtime trace proves intent → planning → capability/tool selection → execution → observation → evaluation → correction.
-Action: implement and test a bounded golden-path runtime loop.
-Acceptance: traceable multi-step execution with observable state/evidence.
-Evidence: runtime trace.
+**Status: PASS (bounded remediation)**
+Root cause: orchestration specification existed, but no runtime trace proved intent → planning → capability/tool selection → execution → observation → evaluation → correction.
+Action completed: added `runtime/agent_loop.py` with explicit intent, plan, capability resolution, execution boundary, observation, evaluation, correction/retry, measurable completion and G4 human boundary.
+Acceptance: traceable multi-step execution with observable state/evidence; failure causes an explicit correction decision and retry; completion is measurable; human boundary is explicit.
+Evidence: commit `d07471839af76d07a7547fafdfe5879181ba6d27`; remediation/retest artifact `docs/execution/GAP_ACPA_002_REMEDIATION_RETEST_REAUDIT_2026-09-19.md`; 4 behavioral tests executed locally with 4/4 passing.
+Limitation: this proves a bounded deterministic agentic loop, not production external-engine autonomy, persistence, or Emergent compatibility.
 
 ### GAP-ACPA-003 — Capability resolver and adapter execution not proven
-Root cause: schemas/registry define the boundary, but executable resolution/adapter behavior is not evidenced.
-Action: implement minimal resolver + adapter boundary.
-Acceptance: supported and unsupported capability cases produce explicit states.
-Evidence: tests + traces.
+Root cause: broader capability registry and adapter boundary are not fully evidenced across production-like execution.
+Action: implement minimal resolver + adapter boundary and test supported/unsupported cases.
+Acceptance: supported and unsupported capability cases produce explicit states; adapter execution is traceable.
+Evidence: existing GAP-001 bounded resolver/adapter smoke plus further conformance test required.
+**Status: OPEN — NEXT DEPENDENCY**
 
 ### GAP-ACPA-004 — Runtime persistence/evidence loop not proven
 Root cause: evidence contract is documented, but persistence/execution integration is not verified.
 Action: implement minimal experiment/evaluation/evidence record flow.
 Acceptance: an execution produces linked EvaluationRecord and EvidenceRecord.
 Evidence: persisted record.
+**Status: BLOCKED BY GAP-003**
 
 ### GAP-ACPA-005 — Emergent import/build compatibility untested
 Root cause: no Emergent runtime evidence in current execution environment.
 Action: perform controlled repository import after minimum runtime surface passes local verification.
 Acceptance: imported project builds/starts and preserves canonical golden path semantics.
 Evidence: Emergent build/run evidence.
+**Status: BLOCKED BY GAP-003/GAP-004**
 
 ## Gate status
-PHASE B: NOT READY / BLOCKED by GAP-ACPA-001 and dependent runtime gaps.
-PHASE C: REC DRAFTED; implementation conformance pending.
-PHASE D: OPEN — remediation required before E/F/G.
-PHASE E: BLOCKED until executable surface exists.
-PHASE F: BLOCKED until runtime exists.
-PHASE G: BLOCKED until execution evidence exists.
-PHASE H: NOT ELIGIBLE — comparative evidence not available.
-PHASE I: NOT ELIGIBLE — submission gate prerequisites not satisfied.
+
+PHASE B: **PARTIAL / PROGRESSING** — GAP-001 and bounded GAP-002 are closed within their acceptance scopes; GAP-003 remains blocking.
+PHASE C: **DRAFT / CONFORMANCE IN PROGRESS**.
+PHASE D: **OPEN** — GAP-003 is the next dependency.
+PHASE E: **BLOCKED** until minimum capability/adapter execution conformance is demonstrated.
+PHASE F: **BLOCKED** for full golden-path external execution.
+PHASE G: **PARTIAL** — bounded runtime evidence exists; persistence/evidence loop remains open.
+PHASE H: **NOT ELIGIBLE** — comparative evidence not available.
+PHASE I: **NOT ELIGIBLE** — submission gate prerequisites not satisfied.
 
 ## Critical distinction
-Documentation quality is not being promoted to runtime proof. The repository demonstrates substantial architectural/specification preparation, but execution readiness remains unproven.
+
+Documentation quality is not being promoted to runtime proof. GAP-ACPA-002 is closed only for the explicitly bounded deterministic agentic-loop acceptance scope. No broader autonomy claim is made.
