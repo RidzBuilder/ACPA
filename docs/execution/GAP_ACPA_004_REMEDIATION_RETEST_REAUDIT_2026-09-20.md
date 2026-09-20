@@ -37,7 +37,7 @@ Acceptance cases:
 3. Invalid promotion status is rejected.
 4. Broken experiment linkage is rejected.
 
-Expected result: 4/4 tests pass.
+Actual result: 4/4 tests passed in an isolated local conformance run (0 failed). A fresh RecordRegistry instance reloaded the JSONL records and linkage verification returned `passed`.
 
 ## Evidence maturity
 - E1: contract/schema design.
@@ -57,4 +57,4 @@ This does not prove:
 ## Gate
 GAP-ACPA-004 may be CLOSED only if the four persistence conformance tests pass
 and a fresh registry instance can reload and verify the persisted chain.
-Otherwise the gap remains OPEN/REOPENED.
+Gate result: PASS for the bounded acceptance scope. GAP-ACPA-004 is CLOSED (bounded).
