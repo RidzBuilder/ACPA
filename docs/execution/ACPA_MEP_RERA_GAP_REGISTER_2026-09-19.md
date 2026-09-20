@@ -40,27 +40,28 @@ Evidence: commits `4d02049a6354686483b36d7088f84f9623595cf8` and `f0677edd12f568
 Limitation: this is bounded local adapter evidence, not production external-provider integration or complete coverage of every registry capability.
 
 ### GAP-ACPA-004 — Runtime persistence/evidence loop not proven
-Root cause: evidence contract is documented, but persistence/execution integration is not verified.
-Action: implement minimal experiment/evaluation/evidence record flow.
-Acceptance: an execution produces linked EvaluationRecord and EvidenceRecord.
-Evidence: persisted record.
-**Status: OPEN — NEXT DEPENDENCY**
+**Status: PASS (bounded remediation)**
+Root cause: evidence contract was documented, but persistence/execution integration was not verified.
+Action completed: added `runtime/persistence.py` with file-backed JSONL persistence for ExecutionRecord, EvaluationRecord and EvidenceRecord, explicit linkage verification, validation/error gates, and deterministic MA-EXP-001 persistence flow.
+Acceptance: execution produces linked EvaluationRecord and EvidenceRecord; records reload from a fresh registry instance; evaluation separates observation/failure/hypothesis/decision; promotion state is explicit; broken linkage is rejected.
+Evidence: commit `3075ec4063bffbb9b81c5e38e500525ab03ae21c`; tests commit `661f92fd1b67de0f0360dd9d552f6da9f229a783`; remediation/retest/audit artifact `docs/execution/GAP_ACPA_004_REMEDIATION_RETEST_REAUDIT_2026-09-20.md`; isolated conformance run 4/4 tests passed; persisted chain `MA-EXP-001-EXEC-001` → `MA-EXP-001-EVAL-001` → `MA-EXP-001-EVID-001` verified after reload.
+Limitation: this proves bounded local file-backed persistence, not production database durability or distributed consistency.
 
 ### GAP-ACPA-005 — Emergent import/build compatibility untested
 Root cause: no Emergent runtime evidence in current execution environment.
-Action: perform controlled repository import after minimum runtime surface passes local verification.
+Action: perform controlled repository import after GAP-004 persistence/evidence conformance passes.
 Acceptance: imported project builds/starts and preserves canonical golden path semantics.
 Evidence: Emergent build/run evidence.
-**Status: BLOCKED BY GAP-004**
+**Status: OPEN — NEXT DEPENDENCY**
 
 ## Gate status
 
 PHASE B: **PARTIAL / PROGRESSING** — GAP-001, GAP-002 and GAP-003 are closed within bounded acceptance scopes; GAP-004 remains blocking.
 PHASE C: **DRAFT / CONFORMANCE IN PROGRESS**.
 PHASE D: **OPEN** — GAP-004 is the next dependency.
-PHASE E: **BLOCKED** until persistence/evidence conformance is demonstrated.
+PHASE E: **OPEN / NEXT** — GAP-004 bounded persistence/evidence conformance is demonstrated; controlled Emergent import/build/run is now the next dependency.
 PHASE F: **PARTIAL** — bounded local golden-path execution exists; full external execution remains unproven.
-PHASE G: **PARTIAL / PROGRESSING** — runtime and adapter evidence exists; persistent EvaluationRecord/EvidenceRecord loop remains open.
+PHASE G: **PASS/PARTIAL (bounded)** — runtime, adapter and persistent EvaluationRecord/EvidenceRecord evidence exists; external-provider and Emergent evidence remain unproven.
 PHASE H: **NOT ELIGIBLE** — comparative evidence not available.
 PHASE I: **NOT ELIGIBLE** — submission gate prerequisites not satisfied.
 
