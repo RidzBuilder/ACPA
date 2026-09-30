@@ -16,6 +16,7 @@ class ACPAAgenticRuntimeLoopTests(unittest.TestCase):
         result = run_agent_loop(require_human_gate=True)
         self.assertEqual(result["state"]["decision"], "needs_human_approval")
         self.assertFalse(result["state"]["completed"])
+        self.assertNotIn("execution.started", [x["event"] for x in result["trace"]])
 
     def test_malformed_success_output_is_blocked(self):
         result = run_agent_loop(lambda package, attempt: {"status":"passed"},
