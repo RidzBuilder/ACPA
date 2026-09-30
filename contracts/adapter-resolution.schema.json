@@ -6,7 +6,7 @@
   "properties":{
     "resolution_id":{"type":"string"},
     "engine_id":{"type":"string"},
-    "adapter_id":{"type":"string"},
+    "adapter_id":{"type":["string","null"]},
     "status":{"type":"string","enum":["resolved","blocked","needs_review"]},
     "unsupported_capabilities":{"type":"array","items":{"type":"string"}},
     "notes":{"type":"string"}
