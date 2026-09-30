@@ -97,6 +97,13 @@ def run_agent_loop(
         record("compilation.blocked", package=package)
         return _result(state, trace)
 
+    if require_human_gate:
+        state.phase = "human_gate"
+        state.decision = "needs_human_approval"
+        record("human_gate.required", gate="G4",
+               execution_package_id="local-smoke-package-001")
+        return _result(state, trace)
+
     executor = executor or _default_executor
 
     while state.attempt < max_attempts and not state.completed:
@@ -130,13 +137,6 @@ def run_agent_loop(
             state.correction = "max_attempts_reached"
             state.decision = "blocked"
             record("correction.blocked", correction=state.correction)
-
-    if state.completed and require_human_gate:
-        state.phase = "human_gate"
-        state.decision = "needs_human_approval"
-        record("human_gate.required", gate="G4",
-               execution_package_id="local-smoke-package-001")
-        state.completed = False
 
     return _result(state, trace)
 
