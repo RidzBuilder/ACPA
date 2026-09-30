@@ -1,8 +1,4 @@
-"""Explicit capability and adapter resolution boundary for ACPA GAP-ACPA-003.
-
-Bounded local implementation only. The canonical plan remains vendor-neutral;
-provider-specific execution is isolated behind an adapter interface.
-"""
+"""Explicit capability and adapter resolution boundary for ACPA GAP-ACPA-003."""
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -10,19 +6,12 @@ from typing import Any, Protocol
 import json
 
 SUPPORTED_CAPABILITIES = {
-    "scene.composition",
-    "camera.motion",
-    "product.interaction",
-    "product.dispensing",
-    "product.application",
-    "macro.detail",
-    "json.compilation",
-    "output.validation",
+    "scene.composition", "camera.motion", "product.interaction",
+    "product.dispensing", "product.application", "macro.detail",
+    "json.compilation", "output.validation",
 }
 
-LOCAL_ADAPTER_CAPABILITIES = {
-    "local-smoke-adapter": SUPPORTED_CAPABILITIES.copy(),
-}
+LOCAL_ADAPTER_CAPABILITIES = {"local-smoke-adapter": SUPPORTED_CAPABILITIES.copy()}
 
 
 @dataclass(frozen=True)
@@ -41,13 +30,24 @@ class AdapterResolution:
     requirements: tuple[CapabilityRequirement, ...]
     unresolved: tuple[str, ...] = ()
     needs_review: tuple[str, ...] = ()
+    engine_id: str = "local-smoke"
+
+    def to_contract_dict(self) -> dict[str, Any]:
+        return {
+            "resolution_id": self.resolution_id,
+            "engine_id": self.engine_id,
+            "adapter_id": self.adapter_id,
+            "status": self.status,
+            "unsupported_capabilities": list(self.unresolved),
+            "notes": "; ".join(
+                r.reason for r in self.requirements if r.reason
+            ),
+        }
 
 
 class Adapter(Protocol):
     adapter_id: str
-
-    def execute(self, execution_package: dict[str, Any]) -> dict[str, Any]:
-        ...
+    def execute(self, execution_package: dict[str, Any]) -> dict[str, Any]: ...
 
 
 class LocalSmokeAdapter:
@@ -55,26 +55,21 @@ class LocalSmokeAdapter:
 
     def execute(self, execution_package: dict[str, Any]) -> dict[str, Any]:
         if execution_package.get("adapter") != self.adapter_id:
-            return {
-                "status": "rejected",
-                "reason": "adapter_mismatch",
-                "adapter_id": self.adapter_id,
-            }
+            return {"status": "rejected", "reason": "adapter_mismatch",
+                    "adapter_id": self.adapter_id}
         return {
             "status": "passed",
             "adapter_id": self.adapter_id,
             "engine": execution_package.get("engine"),
             "observable_effect": "local adapter accepted execution package",
             "output_ref": "local-smoke-output-001",
+            "validation": {"status": "passed"},
         }
 
 
 def resolve_capability_adapter(
-    required: list[str],
-    *,
-    engine_context: str = "local-smoke",
+    required: list[str], *, engine_context: str = "local-smoke"
 ) -> AdapterResolution:
-    """Resolve all required capabilities to one compatible adapter."""
     requirements: list[CapabilityRequirement] = []
     unresolved: list[str] = []
     needs_review: list[str] = []
@@ -82,58 +77,30 @@ def resolve_capability_adapter(
     for capability_id in required:
         if capability_id not in SUPPORTED_CAPABILITIES:
             requirements.append(CapabilityRequirement(
-                capability_id=capability_id,
-                status="unsupported",
-                reason="capability_not_registered",
-            ))
+                capability_id, "unsupported", reason="capability_not_registered"))
             unresolved.append(capability_id)
         elif engine_context != "local-smoke":
             requirements.append(CapabilityRequirement(
-                capability_id=capability_id,
-                status="needs_review",
-                reason="engine_context_not_implemented",
-            ))
+                capability_id, "needs_review", reason="engine_context_not_implemented"))
             needs_review.append(capability_id)
         else:
             requirements.append(CapabilityRequirement(
-                capability_id=capability_id,
-                status="supported",
-                adapter_candidates=("local-smoke-adapter",),
-            ))
+                capability_id, "supported", ("local-smoke-adapter",)))
 
     if unresolved:
-        return AdapterResolution(
-            resolution_id="local-resolution-unsupported-001",
-            status="unsupported",
-            adapter_id=None,
-            requirements=tuple(requirements),
-            unresolved=tuple(unresolved),
-            needs_review=tuple(needs_review),
-        )
-
+        return AdapterResolution("local-resolution-blocked-001", "blocked", None,
+                                 tuple(requirements), tuple(unresolved),
+                                 tuple(needs_review), engine_context)
     if needs_review:
-        return AdapterResolution(
-            resolution_id="local-resolution-review-001",
-            status="needs_review",
-            adapter_id=None,
-            requirements=tuple(requirements),
-            unresolved=tuple(unresolved),
-            needs_review=tuple(needs_review),
-        )
-
-    return AdapterResolution(
-        resolution_id="local-resolution-001",
-        status="resolved",
-        adapter_id="local-smoke-adapter",
-        requirements=tuple(requirements),
-    )
+        return AdapterResolution("local-resolution-review-001", "needs_review", None,
+                                 tuple(requirements), tuple(unresolved),
+                                 tuple(needs_review), engine_context)
+    return AdapterResolution("local-resolution-001", "resolved",
+                             "local-smoke-adapter", tuple(requirements),
+                             engine_id=engine_context)
 
 
-def compile_for_adapter(
-    plan: dict[str, Any],
-    resolution: AdapterResolution,
-) -> dict[str, Any]:
-    """Compile only when the capability/adapter boundary is resolved."""
+def compile_for_adapter(plan: dict[str, Any], resolution: AdapterResolution) -> dict[str, Any]:
     if resolution.status != "resolved" or not resolution.adapter_id:
         return {
             "status": "blocked",
@@ -142,10 +109,9 @@ def compile_for_adapter(
             "unresolved": list(resolution.unresolved),
             "needs_review": list(resolution.needs_review),
         }
-
     return {
         "status": "compiled",
-        "engine": "local-smoke",
+        "engine": resolution.engine_id,
         "adapter": resolution.adapter_id,
         "capabilities": [r.capability_id for r in resolution.requirements],
         "payload": {
@@ -157,56 +123,36 @@ def compile_for_adapter(
     }
 
 
-def execute_with_adapter(
-    execution_package: dict[str, Any],
-    adapter: Adapter | None = None,
-) -> dict[str, Any]:
-    """Execute through the selected adapter and reject mismatches explicitly."""
+def execute_with_adapter(execution_package: dict[str, Any],
+                         adapter: Adapter | None = None) -> dict[str, Any]:
     adapter = adapter or LocalSmokeAdapter()
     return adapter.execute(execution_package)
 
 
 def conformance_smoke() -> dict[str, Any]:
-    """Produce a deterministic capability→adapter conformance trace."""
     plan = {
         "content_family": "Macro Demo",
         "pattern_id": "macro-demo-v0.1",
         "scenes": [{"scene_id": "S01", "purpose": "Product Hook"}],
     }
     resolution = resolve_capability_adapter(
-        ["scene.composition", "product.application", "output.validation"]
-    )
+        ["scene.composition", "product.application", "output.validation"])
     package = compile_for_adapter(plan, resolution)
     execution = execute_with_adapter(package)
-    unsupported = resolve_capability_adapter(["unknown.capability"])
-    review = resolve_capability_adapter(
-        ["scene.composition"], engine_context="external-provider"
-    )
+    blocked = resolve_capability_adapter(["unknown.capability"])
+    review = resolve_capability_adapter(["scene.composition"],
+                                        engine_context="external-provider")
     return {
         "status": "passed" if (
-            resolution.status == "resolved"
-            and package["status"] == "compiled"
+            resolution.status == "resolved" and package["status"] == "compiled"
             and execution["status"] == "passed"
-            and unsupported.status == "unsupported"
-            and review.status == "needs_review"
+            and blocked.status == "blocked" and review.status == "needs_review"
         ) else "failed",
-        "resolution": {
-            "status": resolution.status,
-            "adapter_id": resolution.adapter_id,
-        },
-        "package": {
-            "status": package["status"],
-            "adapter": package.get("adapter"),
-        },
+        "resolution": resolution.to_contract_dict(),
+        "package": {"status": package["status"], "adapter": package.get("adapter")},
         "execution": execution,
-        "unsupported_case": {
-            "status": unsupported.status,
-            "unresolved": list(unsupported.unresolved),
-        },
-        "review_case": {
-            "status": review.status,
-            "needs_review": list(review.needs_review),
-        },
+        "blocked_case": blocked.to_contract_dict(),
+        "review_case": review.to_contract_dict(),
     }
 
 
