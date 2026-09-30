@@ -28,6 +28,11 @@ class CapabilityAdapterTests(unittest.TestCase):
         self.assertEqual(result["status"],"passed")
         self.assertEqual(result["validation"]["status"],"passed")
 
+    def test_uncompiled_package_is_rejected(self):
+        result=execute_with_adapter({"adapter":"local-smoke-adapter"},LocalSmokeAdapter())
+        self.assertEqual(result["status"],"rejected")
+        self.assertEqual(result["reason"],"execution_package_not_compiled")
+
     def test_mismatch_rejected(self):
         result=execute_with_adapter({"status":"compiled","adapter":"wrong-adapter"},LocalSmokeAdapter())
         self.assertEqual(result["status"],"rejected")
