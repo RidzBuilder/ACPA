@@ -2,8 +2,9 @@
   "$schema":"https://json-schema.org/draft/2020-12/schema",
   "title":"ACPA EvidenceRecord",
   "type":"object",
-  "required":["evidence_id","experiment_id","execution_id","evaluation_id","result","decision","promotion_status"],
+  "required":["record_type","evidence_id","experiment_id","execution_id","evaluation_id","result","decision","promotion_status"],
   "properties":{
+    "record_type":{"const":"evidence"},
     "evidence_id":{"type":"string"},
     "experiment_id":{"type":"string"},
     "execution_id":{"type":"string"},
