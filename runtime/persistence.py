@@ -1,9 +1,4 @@
-"""Bounded persistent execution/evaluation/evidence registry for ACPA GAP-ACPA-004.
-
-Stdlib-only, file-backed JSON records. This is a conformance surface, not a
-production database. The registry preserves explicit linkage:
-ExecutionRecord -> EvaluationRecord -> EvidenceRecord.
-"""
+"""Bounded persistent execution/evaluation/evidence registry for ACPA GAP-ACPA-004."""
 from __future__ import annotations
 
 import json
@@ -13,6 +8,10 @@ from typing import Any
 
 class PersistenceError(RuntimeError):
     pass
+
+
+EVALUATION_DECISIONS = {"iterate", "accept_as_experiment", "promote", "reject", "blocked"}
+PROMOTION_STATUSES = {"unreviewed", "provisional", "promoted", "rejected"}
 
 
 class RecordRegistry:
@@ -39,23 +38,21 @@ class RecordRegistry:
         required = ("evaluation_id", "experiment_id", "execution_id", "observations", "decision")
         if any(key not in record for key in required):
             raise PersistenceError("evaluation_record_missing_required_field")
-        if record["decision"] not in {
-            "iterate", "accept_as_experiment", "promote", "reject", "blocked"
-        }:
+        if record["decision"] not in EVALUATION_DECISIONS:
             raise PersistenceError("invalid_evaluation_decision")
+        if "promotion_status" in record and record["promotion_status"] not in PROMOTION_STATUSES:
+            raise PersistenceError("invalid_evaluation_promotion_status")
         record = {**record, "record_type": "evaluation"}
         return self._write("evaluation", record["evaluation_id"], record)
 
     def write_evidence(self, record: dict[str, Any]) -> str:
-        required = (
-            "evidence_id", "experiment_id", "execution_id",
-            "evaluation_id", "result", "decision", "promotion_status"
-        )
+        required = ("evidence_id", "experiment_id", "execution_id",
+                    "evaluation_id", "result", "decision", "promotion_status")
         if any(key not in record for key in required):
             raise PersistenceError("evidence_record_missing_required_field")
-        if record["promotion_status"] not in {
-            "unreviewed", "provisional", "promoted", "rejected"
-        }:
+        if record["decision"] not in EVALUATION_DECISIONS:
+            raise PersistenceError("invalid_evidence_decision")
+        if record["promotion_status"] not in PROMOTION_STATUSES:
             raise PersistenceError("invalid_promotion_status")
         record = {**record, "record_type": "evidence"}
         return self._write("evidence", record["evidence_id"], record)
@@ -86,12 +83,20 @@ class RecordRegistry:
         evidence = self.read_evidence(evidence_id)
         execution = self.read_execution(evidence["execution_id"])
         evaluation = self.read_evaluation(evidence["evaluation_id"])
+
         if execution["experiment_id"] != evidence["experiment_id"]:
             raise PersistenceError("experiment_link_mismatch_execution")
         if evaluation["experiment_id"] != evidence["experiment_id"]:
             raise PersistenceError("experiment_link_mismatch_evaluation")
         if evaluation["execution_id"] != evidence["execution_id"]:
             raise PersistenceError("execution_link_mismatch_evaluation")
+
+        if evaluation["decision"] != evidence["decision"]:
+            raise PersistenceError("decision_link_mismatch_evaluation")
+        evaluation_promotion = evaluation.get("promotion_status")
+        if evaluation_promotion is not None and evaluation_promotion != evidence["promotion_status"]:
+            raise PersistenceError("promotion_status_link_mismatch_evaluation")
+
         return {
             "status": "passed",
             "execution_id": execution["execution_id"],
@@ -102,7 +107,6 @@ class RecordRegistry:
 
 
 def persist_ma_exp_001(root: str | Path) -> dict[str, Any]:
-    """Persist one deterministic execution→evaluation→evidence chain."""
     registry = RecordRegistry(root)
     execution = {
         "record_type": "execution",
@@ -112,11 +116,9 @@ def persist_ma_exp_001(root: str | Path) -> dict[str, Any]:
         "execution_package": {
             "engine": "local-smoke",
             "adapter": "local-smoke-adapter",
-            "capabilities": [
-                "scene.composition", "product.dispensing",
-                "product.application", "macro.detail",
-                "json.compilation", "output.validation",
-            ],
+            "capabilities": ["scene.composition", "product.dispensing",
+                             "product.application", "macro.detail",
+                             "json.compilation", "output.validation"],
         },
         "output_ref": "local-smoke-output-001",
     }
@@ -127,10 +129,8 @@ def persist_ma_exp_001(root: str | Path) -> dict[str, Any]:
         "evaluation_id": "MA-EXP-001-EVAL-001",
         "experiment_id": "MA-EXP-001",
         "execution_id": execution["execution_id"],
-        "observations": [
-            "local adapter accepted execution package",
-            "deterministic smoke execution returned passed",
-        ],
+        "observations": ["local adapter accepted execution package",
+                         "deterministic smoke execution returned passed"],
         "failures": [],
         "hypotheses": ["tested configuration is internally consistent"],
         "decision": "accept_as_experiment",
