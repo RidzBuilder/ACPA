@@ -54,8 +54,18 @@ class LocalSmokeAdapter:
     adapter_id = "local-smoke-adapter"
 
     def execute(self, execution_package: dict[str, Any]) -> dict[str, Any]:
+        if execution_package.get("status") != "compiled":
+            return {"status": "rejected", "reason": "execution_package_not_compiled",
+                    "adapter_id": self.adapter_id}
         if execution_package.get("adapter") != self.adapter_id:
             return {"status": "rejected", "reason": "adapter_mismatch",
+                    "adapter_id": self.adapter_id}
+        required = ("engine", "capabilities", "payload", "validation")
+        if any(key not in execution_package for key in required):
+            return {"status": "rejected", "reason": "execution_package_incomplete",
+                    "adapter_id": self.adapter_id}
+        if execution_package.get("validation", {}).get("status") != "passed":
+            return {"status": "rejected", "reason": "execution_package_not_validated",
                     "adapter_id": self.adapter_id}
         return {
             "status": "passed",
