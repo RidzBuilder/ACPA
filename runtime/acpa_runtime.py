@@ -21,10 +21,23 @@ def health() -> dict[str, Any]:
 
 def validate_plan(plan: dict[str, Any]) -> list[str]:
     errors=[]
-    for key in ("content_family","pattern_id","scenes"):
-        if key not in plan: errors.append(f"missing:{key}")
-    if not isinstance(plan.get("scenes"), list) or not plan.get("scenes"):
+    if not isinstance(plan, dict): return ["invalid:plan"]
+    if not isinstance(plan.get("content_family"), str) or not plan.get("content_family").strip():
+        errors.append("invalid:content_family")
+    if not isinstance(plan.get("pattern_id"), str) or not plan.get("pattern_id").strip():
+        errors.append("invalid:pattern_id")
+    scenes = plan.get("scenes")
+    if not isinstance(scenes, list) or not scenes:
         errors.append("invalid:scenes")
+        return errors
+    for index, scene in enumerate(scenes):
+        if not isinstance(scene, dict):
+            errors.append(f"invalid:scenes[{index}]")
+            continue
+        if not isinstance(scene.get("scene_id"), str) or not scene.get("scene_id").strip():
+            errors.append(f"invalid:scenes[{index}].scene_id")
+        if not isinstance(scene.get("purpose"), str) or not scene.get("purpose").strip():
+            errors.append(f"invalid:scenes[{index}].purpose")
     return errors
 
 def resolve_capabilities(required: list[str]) -> dict[str, Any]:
