@@ -2,10 +2,11 @@
   "$schema":"https://json-schema.org/draft/2020-12/schema",
   "title":"ACPA EvaluationRecord",
   "type":"object",
-  "required":["evaluation_id","experiment_id","observations","decision"],
+  "required":["evaluation_id","experiment_id","execution_id","observations","decision"],
   "properties":{
     "evaluation_id":{"type":"string"},
     "experiment_id":{"type":"string"},
+    "execution_id":{"type":"string"},
     "observations":{"type":"array","items":{"type":"string"}},
     "failures":{"type":"array","items":{"type":"string"}},
     "hypotheses":{"type":"array","items":{"type":"string"}},
