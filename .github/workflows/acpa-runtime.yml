@@ -1,22 +1,23 @@
 name: ACPA Runtime Conformance
-
 on:
   push:
-    branches:
-      - "execution/**"
+    branches: ["execution/**"]
+  pull_request:
+    branches: ["main"]
   workflow_dispatch:
-
 jobs:
   runtime:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.x"
-      - name: Test
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.x"}
+      - name: Full conformance suite
         run: python -m unittest discover -s tests -v
+      - name: Agent loop CLI
+        run: python -m runtime.agent_loop
+      - name: Capability adapter CLI
+        run: python runtime/capability_adapter.py
       - name: Health
         run: python runtime/acpa_runtime.py health
       - name: Smoke
